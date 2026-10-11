@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From β to M, at a glance</title>
+<meta name="description" content="Interactive dashboard showing how DNA methylation beta-values map to M-values: exact density morph, transform curve and replicate mean–variance.">
+<meta property="og:title" content="From β to M, at a glance">
+<meta property="og:description" content="Interactive dashboard showing how DNA methylation beta-values map to M-values: exact density morph, transform curve and replicate mean–variance.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%230c1422%22%2F%3E%3Cpath%20d%3D%22M5%2027%20C%209%2026%2C%2012%2021%2C%2016%2016%20S%2023%206%2C%2027%205%22%20fill%3D%22none%22%20stroke%3D%22%2375e0d2%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+<style>
+html,body{margin:0;background:#060a14}
+body{padding:14px 16px 24px}
+.site-nav{max-width:1500px;margin:0 auto;display:flex;gap:6px;flex-wrap:wrap;font:600 12px/1 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.site-nav a{color:#9fb0c8;text-decoration:none;padding:7px 12px;border:1px solid #233149;border-radius:999px;background:#0d1524}
+.site-nav a:hover{color:#fff;border-color:#33445f}
+.site-nav a[aria-current]{color:#0c1422;background:#75e0d2;border-color:#75e0d2}
+.site-nav a:focus-visible{outline:3px solid #75e0d288;outline-offset:2px}
+</style>
+</head>
+<body>
+<nav class="site-nav" aria-label="Pages"><a href="./" aria-current="page">Dashboard</a><a href="explorer.html">In-depth explorer</a><a href="https://github.com/Arian-Abdi/Mval-dashboard">Source on GitHub</a></nav>
+<div id="bm3-page">
+ <style>
+ #bm3-page{position:relative;--line:#26344b;--text:#edf3ff;--muted:#91a0b8;--cyan:#75e0d2;--blue:#6ea8ff;--grey:#9cb2c2;--coral:#ff9b78;--gold:#f5c96a;color:var(--text);font:13px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 8% 0%,#182347 0,transparent 30rem),radial-gradient(ellipse at 100% 100%,#10302f 0,transparent 28rem),linear-gradient(135deg,#090e1a,#0c1422 60%,#101a2a);border:1px solid #27334a;border-radius:22px;padding:16px 18px 18px;max-width:1500px;margin:14px auto;box-shadow:0 28px 90px #0008}
+ #bm3-page *{box-sizing:border-box}
+ #bm3-page .head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+ #bm3-page .eyebrow{display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.17em;font-size:9.5px;font-weight:800;color:var(--cyan)}
+ #bm3-page .spark{width:6px;height:6px;background:var(--cyan);border-radius:50%;box-shadow:0 0 12px #75e0d2}
+ #bm3-page h1{font-size:clamp(22px,2.3vw,30px);line-height:1.05;letter-spacing:-.04em;margin:6px 0 0;font-weight:730}
+ #bm3-page h1 span{color:var(--cyan)}
+ #bm3-page .chips{display:flex;gap:7px;flex-wrap:wrap}
+ #bm3-page .chip{border:1px solid #2a3850;background:#101a2a;border-radius:999px;padding:5px 11px;color:#b8c5d8;font-size:11px;white-space:nowrap}
+ #bm3-page .chip b{color:#fff;font-weight:700}
+ #bm3-page .chip.f{font:11.5px ui-monospace,SFMono-Regular,Consolas,monospace;color:#fff}
+ #bm3-page .chip.f em{font-style:normal;color:var(--cyan)}
+ #bm3-page .layout{display:grid;grid-template-columns:292px minmax(0,1fr);gap:12px;align-items:start}
+ #bm3-page .side{display:flex;flex-direction:column;gap:10px;min-width:0}
+ #bm3-page .box{border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#111a29,#0f1725);padding:12px 14px;min-width:0}
+ #bm3-page .box-label{color:#8192ab;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:750;margin-bottom:8px}
+ #bm3-page .row{display:flex;gap:8px}
+ #bm3-page .btn{flex:1;font:inherit;font-size:12px;font-weight:700;color:#101827;background:var(--cyan);border:0;border-radius:9px;padding:8px 10px;cursor:pointer;transition:transform .18s,filter .18s;white-space:nowrap}
+ #bm3-page .btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+ #bm3-page .btn.alt{background:#172236;color:#dce6f6;border:1px solid #2a3952}
+ #bm3-page .btn:focus-visible,#bm3-page input:focus-visible{outline:3px solid #75e0d288;outline-offset:2px}
+ #bm3-page .scrub{display:flex;align-items:center;gap:9px;margin-top:10px;color:#9eacc1;font-size:10px;font-weight:700}
+ #bm3-page .readout{margin-top:2px;text-align:center;color:#aebbd0;font:10.5px ui-monospace,SFMono-Regular,Consolas,monospace}
+ #bm3-page input[type=range]{accent-color:#75e0d2;cursor:pointer;width:100%;margin:3px 0 0}
+ #bm3-page .setting{display:block}
+ #bm3-page .setting+.setting{margin-top:4px}
+ #bm3-page .setting-head{display:flex;justify-content:space-between;gap:8px;color:#aebbd0;font-size:11px}
+ #bm3-page .setting output{color:#fff;font:700 11px ui-monospace,SFMono-Regular,Consolas,monospace}
+ #bm3-page .setting small{display:block;color:#73839b;font-size:9.5px;line-height:1.3}
+ #bm3-page .setting small b{color:#cfd9ea;font-weight:700}
+ #bm3-page .toggles{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;color:#aebbd0;font-size:11px}
+ #bm3-page .toggles label{display:flex;align-items:center;gap:8px;cursor:pointer}
+ #bm3-page input[type=checkbox]{accent-color:#75e0d2;width:13px;height:13px;margin:0;cursor:pointer}
+ #bm3-page .main{display:flex;flex-direction:column;gap:12px;min-width:0}
+ #bm3-page .card{border:1px solid var(--line);border-radius:14px;background:#0c1421;overflow:hidden;min-width:0}
+ #bm3-page .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 14px;border-bottom:1px solid #1f2b3f;background:linear-gradient(110deg,#111b2b,#111a29)}
+ #bm3-page .card-head b{font-size:13px}
+ #bm3-page .card-head small,#bm3-page .stage small{display:block;color:var(--muted);font-size:10.5px;font-weight:450;margin-top:1px}
+ #bm3-page .stage{display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px}
+ #bm3-page .stage-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px #75e0d277;flex:none}
+ #bm3-page .tag{display:inline-block;font:700 10px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--cyan);border:1px solid #2a3850;border-radius:6px;padding:0 6px;margin-right:7px;vertical-align:1px}
+ #bm3-page .live{font:700 10.5px ui-monospace,SFMono-Regular,Consolas,monospace;color:#b7c4d9;border:1px solid #2a3850;padding:5px 8px;border-radius:8px;background:#0c1422;white-space:pre}
+ #bm3-page canvas{display:block;width:100%}
+ #bm3-page .cA{height:270px}
+ #bm3-page .cB,#bm3-page .cC{height:320px}
+ #bm3-page .cB{touch-action:pan-y;cursor:ew-resize}
+ #bm3-page .duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+ #bm3-page .foot{padding:7px 14px;border-top:1px solid #1f2b3f;color:#aebbd0;font:10.5px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}
+ #bm3-page .foot b{color:#fff}
+ #bm3-page .g{color:var(--gold)!important}
+ #bm3-page .c{color:var(--cyan)!important}
+ #bm3-page .insp-head{display:flex;align-items:center;gap:7px;font-weight:700;margin:0 0 7px;font-size:12.5px}
+ #bm3-page .insp-head span{color:var(--muted);font-weight:450;font-size:11px}
+ #bm3-page .sw{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+ #bm3-page dl{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin:0;font-size:11px}
+ #bm3-page dt{color:#8797ad}
+ #bm3-page dd{margin:0;color:#fff;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right}
+ #bm3-page .hint{color:#73839b;font-size:11px;margin:0}
+ #bm3-page .note{padding:8px 14px;border-top:1px solid #1f2b3f;color:#9baac0;font-size:11.5px;line-height:1.45}
+ #bm3-page .note b{color:#fff;font-weight:700;margin-right:4px}
+ #bm3-page .legend{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:10px;padding-top:9px;border-top:1px solid #1f2b3f;color:#aab8cc;font-size:10px}
+ #bm3-page .legend span{display:flex;align-items:center;gap:6px}
+ #bm3-page .ln{width:16px;height:0;border-top:2px solid var(--cyan)}
+ #bm3-page .ln.dash{border-top:2px dashed var(--gold)}
+ #bm3-page .wbox{width:12px;height:9px;background:rgba(245,201,106,.2);border:1px dashed rgba(245,201,106,.75)}
+ #bm3-page .tip{position:absolute;z-index:20;pointer-events:none;background:rgba(8,13,25,.95);border:1px solid #33445f;border-radius:9px;padding:7px 10px;color:#c9d5e8;font:11.5px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap;box-shadow:0 10px 28px #000a}
+ #bm3-page .tip[hidden]{display:none}
+ #bm3-page .tip b{color:#fff;font-weight:700}
+ #bm3-page .tip .tip-h{display:flex;align-items:center;gap:6px;color:#8fa0b8;font:600 10.5px ui-sans-serif,system-ui,sans-serif;margin-bottom:3px}
+ #bm3-page .tip .tip-s{color:#8fa0b8;font-size:10.5px;margin-top:2px}
+ @media(max-width:900px){#bm3-page .layout{display:flex;flex-direction:column;align-items:stretch}#bm3-page .side{display:contents}#bm3-page .side>.box{order:2}#bm3-page .side>.transport-box{order:0}#bm3-page .main{order:1}}
+ @media(max-width:760px){#bm3-page{padding:14px;border-radius:16px}#bm3-page .duo{grid-template-columns:1fr}#bm3-page .card-head{flex-wrap:wrap}}
+ </style>
+
+ <div class="head">
+  <div><div class="eyebrow"><i class="spark"></i> Interactive dashboard</div><h1>From <span>&#946;</span> to M, <span>at a glance</span></h1></div>
+  <div class="chips"><div class="chip f">M = log<sub>2</sub>(<em>&#946;</em> / (1 &#8722; <em>&#946;</em>))</div><div class="chip f">dM/d&#946; = 1 / (ln 2 &middot; <em>&#946;</em>(1 &#8722; <em>&#946;</em>))</div><div class="chip"><b data-k="nLabel">1,500</b> CpGs &middot; <b>8</b> replicates</div></div>
+ </div>
+
+ <div class="layout">
+  <aside class="side">
+   <div class="box transport-box">
+    <div class="box-label">Transform</div>
+    <div class="row"><button class="btn" data-k="play" type="button">&#9646;&#9646; &nbsp; Pause</button><button class="btn alt" data-k="resample" type="button">&#8635; &nbsp; New sample</button></div>
+    <label class="scrub"><span>&#946;</span><input data-k="scrub" type="range" min="0" max="1000" value="0" aria-label="Transformation progress"><span>M</span></label>
+    <div class="readout" data-k="readout">0% transformed</div>
+   </div>
+   <div class="box">
+    <div class="box-label">Simulation</div>
+    <label class="setting"><span class="setting-head"><span>Probe count</span><output data-k="nOut">1,500</output></span><input data-k="n" type="range" min="200" max="4000" step="100" value="1500"></label>
+    <label class="setting"><span class="setting-head"><span>Methylated &middot; Beta(10, 2)</span><output data-k="pmOut">55%</output></span><input data-k="pm" type="range" min="10" max="90" step="5" value="55"><small>Unmethylated &middot; Beta(2, 10) gets the rest: <b data-k="puOut">35%</b></small></label>
+    <label class="setting"><span class="setting-head"><span>Intermediate &middot; Beta(4, 4)</span><output data-k="piOut">10%</output></span><input data-k="pi" type="range" min="0" max="40" step="5" value="10"></label>
+    <label class="setting"><span class="setting-head"><span>Technical noise &#963;</span><output data-k="sgOut">0.25</output></span><input data-k="sg" type="range" min="0.05" max="0.6" step="0.05" value="0.25"></label>
+    <label class="setting"><span class="setting-head"><span>&#916;&#946; window width</span><output data-k="dwOut">0.10</output></span><input data-k="dw" type="range" min="0.02" max="0.3" step="0.01" value="0.1"><small>Drag sideways in B to slide it</small></label>
+    <label class="setting"><span class="setting-head"><span>Animation speed</span><output data-k="spOut">1.0x</output></span><input data-k="sp" type="range" min="0.25" max="2" step="0.25" value="1"></label>
+   </div>
+   <div class="box">
+    <div class="box-label">Layers &amp; legend</div>
+    <div class="toggles"><label><input type="checkbox" data-k="tDens" checked> Exact density</label><label><input type="checkbox" data-k="tHist" checked> Histogram</label><label><input type="checkbox" data-k="tDots" checked> CpG dots</label><label><input type="checkbox" data-k="tLink" checked> &#916;&#946; window</label></div>
+    <div class="legend"><span><i class="sw" style="background:var(--blue)"></i> unmethylated</span><span><i class="sw" style="background:var(--grey)"></i> intermediate</span><span><i class="sw" style="background:var(--coral)"></i> methylated</span><span><i class="wbox"></i> &#916;&#946; window</span><span><i class="ln"></i> binned trend</span><span><i class="ln dash"></i> prediction</span></div>
+   </div>
+   <div class="box"><div class="box-label">Probe inspector</div><div data-k="insp"></div></div>
+  </aside>
+
+  <div class="main">
+   <section class="card">
+    <div class="card-head"><div class="stage"><i class="stage-dot"></i><div><span class="tag">A</span><span data-k="stage">Beta scale</span><small data-k="caption">True methylation levels on the bounded 0&ndash;1 scale</small></div></div><div class="live" data-k="live">BETA SCALE  00%</div></div>
+    <canvas class="cA" data-k="cA" aria-label="Exact mixture density and CpG dots morphing from the beta scale to the M scale"></canvas>
+    <div class="note"><b data-k="insTitle">Two crowded peaks near the walls.</b> <span data-k="insText"></span></div>
+   </section>
+   <div class="duo">
+    <section class="card"><div class="card-head"><div><span class="tag">B</span><b>Transform curve</b><small>Drag sideways to slide the &#916;&#946; window &middot; click a dot to pin it</small></div></div><canvas class="cB" data-k="cB" aria-label="Transform curve from beta to M with marginal histograms and a draggable window"></canvas><div class="foot" data-k="winFoot"></div></section>
+    <section class="card"><div class="card-head"><div><span class="tag">C</span><b>Replicate noise vs mean</b><small>SD of 8 replicates against their mean &middot; morphs with A</small></div></div><canvas class="cC" data-k="cC" aria-label="Standard deviation of replicates against their mean, morphing from beta to M scale"></canvas><div class="foot" data-k="sdFoot"></div></section>
+   </div>
+  </div>
+ </div>
+
+ <div class="tip" data-k="tip" hidden></div>
+ <script>
+ (()=>{
+ const root=document.getElementById('bm3-page');if(!root||root.dataset.ready)return;root.dataset.ready='1';
+ const $=k=>root.querySelector('[data-k="'+k+'"]');
+ /*MATH*/
+ const LN2=Math.LN2,BLO=.004,BHI=.996,MAXM=8,K=8;
+ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),lerp=(a,b,s)=>a+(b-a)*s,ease=x=>.5-.5*Math.cos(Math.PI*x);
+ const logit=b=>Math.log2(b/(1-b)),expit=m=>1/(1+Math.pow(2,-m));
+ const LG=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+ function lnGamma(z){if(z<.5)return Math.log(Math.PI/Math.sin(Math.PI*z))-lnGamma(1-z);z-=1;let x=LG[0];for(let i=1;i<9;i++)x+=LG[i]/(z+i);const s=z+7.5;return .5*Math.log(2*Math.PI)+(z+.5)*Math.log(s)-s+Math.log(x)}
+ function betaPdf(x,a,b){if(x<=0||x>=1)return 0;return Math.exp((a-1)*Math.log(x)+(b-1)*Math.log(1-x)+lnGamma(a+b)-lnGamma(a)-lnGamma(b))}
+ // Screen position along the morphing axis, as a fraction of its width, and its derivative in beta
+ function u(b,e){return (1-e)*b+e*(clamp(logit(b),-MAXM,MAXM)+MAXM)/(2*MAXM)}
+ function dudb(b,e){return (1-e)+e/(2*MAXM*LN2*b*(1-b))}
+ function randn(){let a=0,b=0;while(!a)a=Math.random();while(!b)b=Math.random();return Math.sqrt(-2*Math.log(a))*Math.cos(2*Math.PI*b)}
+ function gammaDraw(k){if(k<1)return gammaDraw(k+1)*Math.pow(Math.random(),1/k);const d=k-1/3,c=1/Math.sqrt(9*d);for(;;){const x=randn();let v=1+c*x;if(v<=0)continue;v=v*v*v;const r=Math.random();if(r<1-.0331*x*x*x*x||Math.log(r)<.5*x*x+d*(1-v+Math.log(v)))return d*v}}
+ function betaDraw(a,b){const x=gammaDraw(a);return x/(x+gammaDraw(b))}
+ // k replicates: log-normal noise on each channel, beta = Meth / (Meth + Unmeth); returns [mean beta, SD beta, mean M, SD M]
+ function replicates(mu,sigma,k){let sb=0,sb2=0,sm=0,sm2=0;for(let j=0;j<k;j++){const r=mu*Math.exp(sigma*randn()),q=(1-mu)*Math.exp(sigma*randn()),b=clamp(r/(r+q),1e-6,1-1e-6),m=logit(b);sb+=b;sb2+=b*b;sm+=m;sm2+=m*m}const mb=sb/k,mm=sm/k;return[mb,Math.sqrt(Math.max(0,(sb2-k*mb*mb)/(k-1))),mm,Math.sqrt(Math.max(0,(sm2-k*mm*mm)/(k-1)))]}
+ // Bias of the sample SD from K normal draws: E[s] = c4 * sigma
+ const C4=Math.sqrt(2/(K-1))*Math.exp(lnGamma(K/2)-lnGamma((K-1)/2));
+ /*END MATH*/
+ const COMP=[{name:'unmethylated',a:2,b:10,rgb:'110,168,255'},{name:'intermediate',a:4,b:4,rgb:'156,178,194'},{name:'methylated',a:10,b:2,rgb:'255,155,120'}];
+ const MONO='ui-monospace,SFMono-Regular,Consolas,monospace',SANS='ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif';
+ const GRID=[.01,.05,.1,.2,.3,.4,.5,.6,.7,.8,.9,.95,.99],GLAB=[.01,.1,.2,.5,.8,.9,.99],G=480,HB=40;
+ const nEl=$('n'),pmEl=$('pm'),piEl=$('pi'),sgEl=$('sg'),dwEl=$('dw'),spEl=$('sp'),scrub=$('scrub'),play=$('play'),tDens=$('tDens'),tHist=$('tHist'),tDots=$('tDots'),tLink=$('tLink');
+ const S={n:1500,pm:.55,pi:.1,sigma:.25,dw:.1,w0:.8,speed:1};
+ let D=null,t=0,playing=true,last=0,dirty=true,hover=-1,pinned=-1,drag=null,lastSel=-2,lastPhase=-1;
+ const fm=m=>(m<0?'−':'+')+Math.abs(m).toFixed(2);
+ function niceCeil(x){if(!(x>0))return 1;const p=Math.pow(10,Math.floor(Math.log10(x)));for(const f of[1,1.2,1.5,2,2.5,3,4,5,6,8,10])if(f*p>=x)return f*p;return 10*p}
+ function tick(v,range){return range<.2?v.toFixed(3):range<2?v.toFixed(2):v.toFixed(1)}
+
+ function readSettings(){
+  const piV=+piEl.value;pmEl.max=100-piV;if(+pmEl.value>100-piV)pmEl.value=100-piV;const pmV=+pmEl.value;
+  S.n=+nEl.value;S.pi=piV/100;S.pm=pmV/100;S.sigma=+sgEl.value;S.dw=+dwEl.value;S.speed=+spEl.value;S.w0=clamp(S.w0,0,1-S.dw);
+  $('nOut').textContent=$('nLabel').textContent=S.n.toLocaleString();$('pmOut').textContent=pmV+'%';$('piOut').textContent=piV+'%';$('puOut').textContent=(100-pmV-piV)+'%';
+  $('sgOut').textContent=S.sigma.toFixed(2);$('dwOut').textContent=S.dw.toFixed(2);$('spOut').textContent=S.speed.toFixed(2).replace(/0$/,'')+'x';
+ }
+
+ function sample(){
+  readSettings();
+  const n=S.n,w=[1-S.pm-S.pi,S.pi,S.pm];
+  const mu=new Float64Array(n),comp=new Uint8Array(n),jit=new Float32Array(n),lowF=new Float32Array(n),ownF=new Float32Array(n),mb=new Float32Array(n),sb=new Float32Array(n),mm=new Float32Array(n),sm=new Float32Array(n);
+  const hb=[0,1,2].map(()=>new Uint16Array(HB)),hm=[0,1,2].map(()=>new Uint16Array(HB));
+  for(let i=0;i<n;i++){
+   const r=Math.random(),k=r<w[0]?0:r<w[0]+w[1]?1:2,b=clamp(betaDraw(COMP[k].a,COMP[k].b),BLO,BHI);
+   mu[i]=b;comp[i]=k;jit[i]=Math.random();
+   let lo=0;for(let j=0;j<k;j++)lo+=w[j]*betaPdf(b,COMP[j].a,COMP[j].b);lowF[i]=lo;ownF[i]=w[k]*betaPdf(b,COMP[k].a,COMP[k].b);
+   const rep=replicates(b,S.sigma,K);mb[i]=rep[0];sb[i]=rep[1];mm[i]=rep[2];sm[i]=rep[3];
+   hb[k][Math.min(HB-1,Math.floor(b*HB))]++;hm[k][clamp(Math.floor((logit(b)+MAXM)/(2*MAXM)*HB),0,HB-1)]++;
+  }
+  // Exact density on a logit-spaced grid (resolves both scales), weighted by mixture share
+  const gb=new Float64Array(G),gf=[0,1,2].map(()=>new Float64Array(G)),m0=logit(BLO),m1=logit(BHI);
+  for(let g=0;g<G;g++){gb[g]=expit(m0+(m1-m0)*g/(G-1));for(let k=0;k<3;k++)gf[k][g]=w[k]*betaPdf(gb[g],COMP[k].a,COMP[k].b)}
+  const q99=a=>{const s=Array.from(a).sort((x,y)=>x-y);return s[Math.floor(.99*(s.length-1))]};
+  // Heteroscedasticity summary: mean SD within deciles of the true level, max/min ratio per scale
+  const order=Array.from({length:n},(_,i)=>i).sort((a,b)=>mu[a]-mu[b]);let rb=[],rm=[];
+  for(let d=0;d<10;d++){let s1=0,s2=0,c=0;for(let j=Math.floor(d*n/10);j<Math.floor((d+1)*n/10);j++){s1+=sb[order[j]];s2+=sm[order[j]];c++}rb.push(s1/c);rm.push(s2/c)}
+  D={n,w,mu,comp,jit,lowF,ownF,mb,sb,mm,sm,hb,hm,gb,gf,Yb:niceCeil(q99(sb)*1.12),Ym:niceCeil(q99(sm)*1.12),ratioB:Math.max(...rb)/Math.min(...rb),ratioM:Math.max(...rm)/Math.min(...rm),
+   posA:new Float32Array(2*n).fill(NaN),posB:new Float32Array(2*n).fill(NaN),posC:new Float32Array(2*n).fill(NaN)};
+  hover=-1;pinned=-1;lastSel=-2;$('tip').hidden=true;
+  $('sdFoot').innerHTML='Across deciles of the true level, mean replicate SD varies <b class="g">'+D.ratioB.toFixed(1)+'&times;</b> on &#946; but only <b class="c">'+D.ratioM.toFixed(2)+'&times;</b> on M.<br>Expected sample SD on M: c<sub>4</sub>&middot;&#963;&#8730;2 / ln 2 = <b>'+(C4*S.sigma*Math.SQRT2/LN2).toFixed(2)+'</b> (K = '+K+', c<sub>4</sub> = '+C4.toFixed(3)+')';
+  updateWindow();updateInspector();dirty=true;
+ }
+
+ function inWin(b){return b>=S.w0&&b<=S.w0+S.dw}
+ function updateWindow(){
+  if(!D)return;const a=S.w0,z=S.w0+S.dw,ma=logit(clamp(a,BLO,BHI)),mz=logit(clamp(z,BLO,BHI));let c=0;for(let i=0;i<D.n;i++)if(inWin(D.mu[i]))c++;
+  $('winFoot').innerHTML='<span class="g">&#946; '+a.toFixed(2)+' &ndash; '+z.toFixed(2)+'</span> &#8594; <span class="c">M '+fm(ma)+' &ndash; '+fm(mz)+'</span><br>&#916;&#946; = <b>'+S.dw.toFixed(2)+'</b> becomes &#916;M = <b>'+(mz-ma).toFixed(2)+'</b> &nbsp;('+((mz-ma)/S.dw).toFixed(1)+'&times;) &middot; <b>'+c.toLocaleString()+'</b> CpGs inside';
+ }
+
+ function updateInspector(){
+  const i=hover>=0?hover:pinned,key=i+':'+(i===pinned);if(key===lastSel)return;lastSel=key;const el=$('insp');
+  if(i<0||!D){el.innerHTML='<p class="hint">Hover or tap any dot in A, B or C to inspect that CpG in all three views. Click or tap to pin it; click or tap empty space to unpin.</p>';return}
+  const b=D.mu[i],k=D.comp[i],s=1/(LN2*b*(1-b));
+  el.innerHTML='<div class="insp-head"><i class="sw" style="background:rgb('+COMP[k].rgb+')"></i>CpG #'+(i+1)+' <span>'+COMP[k].name+(i===pinned?' &middot; pinned':'')+'</span></div><dl>'+
+   '<dt>True level &#946;</dt><dd>'+b.toFixed(3)+'</dd><dt>M = log<sub>2</sub>(&#946;/(1&#8722;&#946;))</dt><dd>'+fm(logit(b))+'</dd><dt>Local stretch dM/d&#946;</dt><dd>'+s.toFixed(1)+'&times;</dd>'+
+   '<dt>Replicates on &#946; (mean &plusmn; SD)</dt><dd>'+D.mb[i].toFixed(3)+' &plusmn; '+D.sb[i].toFixed(3)+'</dd><dt>Replicates on M (mean &plusmn; SD)</dt><dd>'+fm(D.mm[i])+' &plusmn; '+D.sm[i].toFixed(2)+'</dd>'+
+   '<dt>In &#916;&#946; window</dt><dd>'+(inWin(b)?'yes':'no')+'</dd></dl>';
+ }
+
+ function updateText(){
+  const pct=Math.round(t*100);$('live').textContent=(t<.01?'BETA SCALE':t>.99?'M SCALE':'AXIS TRANSFORM')+'  '+String(pct).padStart(2,'0')+'%';$('readout').textContent=pct+'% transformed';
+  const ph=t<.01?0:t>.99?2:1;if(ph===lastPhase)return;lastPhase=ph;
+  const P=[['Beta scale','True methylation levels on the bounded 0–1 scale','Two crowded peaks near the walls.','On β, unmethylated and methylated CpGs pile up against 0 and 1, and their replicate noise shrinks toward those walls, which is why view C arches.'],
+   ['Transformation in motion','Dots, gridlines, density, histogram and window edges all follow one map','Mass is conserved; density is not.','Each component keeps its area while the axis stretches. The exact curve is the mixture density divided by the local stretch, and it matches the empirical histogram at every frame.'],
+   ['M scale','The same CpGs, expressed as log₂ odds','Noise no longer depends on the mean.','On M the mean–SD trend in view C is flat. Constant variance is what linear models such as limma assume, and it is why M-values are preferred for differential testing.']][ph];
+  $('stage').textContent=P[0];$('caption').textContent=P[1];$('insTitle').textContent=P[2];$('insText').textContent=P[3];
+ }
+
+ // ---------- drawing helpers ----------
+ function panelBg(ctx,x,y,w,h){const g=ctx.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#0e1928');g.addColorStop(1,'#0a111d');ctx.fillStyle=g;ctx.fillRect(x,y,w,h)}
+ function vline(ctx,x,y0,y1){ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x,y1);ctx.stroke()}
+ function hline(ctx,x0,x1,y){ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke()}
+ function pill(ctx,txt,x,y,col,align){ctx.font='700 10px '+MONO;const w=ctx.measureText(txt).width+12,x0=align==='right'?x-w:align==='left'?x:x-w/2;ctx.fillStyle='rgba(8,13,25,.88)';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x0,y-9,w,18,5);else ctx.rect(x0,y-9,w,18);ctx.fill();ctx.fillStyle=col;ctx.textAlign='left';ctx.fillText(txt,x0+6,y+3.5)}
+ function drawDots(ctx,pos,r,link){
+  for(let pass=0;pass<2;pass++)for(let k=0;k<3;k++){
+   ctx.beginPath();let any=false;
+   for(let i=0;i<D.n;i++){if(D.comp[i]!==k)continue;const w=inWin(D.mu[i]);if(link){if(pass===0&&w)continue;if(pass===1&&!w)continue}else if(pass===1)continue;
+    const x=pos[2*i],y=pos[2*i+1],rr=pass?r+.35:r;ctx.moveTo(x+rr,y);ctx.arc(x,y,rr,0,6.2832);any=true}
+   if(any){ctx.fillStyle='rgba('+COMP[k].rgb+','+(link&&!pass?.24:.85)+')';ctx.fill()}
+  }
+ }
+ function rings(ctx,pos){
+  const ring=(i,double)=>{const x=pos[2*i],y=pos[2*i+1];if(!isFinite(x))return;ctx.lineWidth=1.6;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(x,y,6.5,0,6.2832);ctx.stroke();if(double){ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.4)';ctx.beginPath();ctx.arc(x,y,10.5,0,6.2832);ctx.stroke()}ctx.lineWidth=1};
+  if(pinned>=0)ring(pinned,true);if(hover>=0&&hover!==pinned)ring(hover,false);
+ }
+ function xTicks(ctx,X,y,e){
+  const aB=1-clamp((e-.62)/.3,0,1),aM=clamp((e-.68)/.3,0,1);ctx.font='10px '+MONO;ctx.textAlign='center';
+  ctx.fillStyle='rgba(167,181,201,'+aB+')';for(let k=0;k<=5;k++){const b=k/5;ctx.fillText(b.toFixed(1),X(b,logit(b)),y)}
+  ctx.fillStyle='rgba(117,224,210,'+aM+')';for(let m=-8;m<=8;m+=2)ctx.fillText(m>0?'+'+m:String(m),X(expit(m),m),y);
+  return[aB,aM];
+ }
+
+ // ---------- view A: morphing exact density ----------
+ function drawA(){
+  const c=CV.A,ctx=c.ctx,W=c.W,H=c.H;if(!W||!D)return;ctx.setTransform(c.dpr,0,0,c.dpr,0,0);ctx.clearRect(0,0,W,H);
+  const e=ease(t),L=56,R=W-20,T=48,B=H-64,span=R-L,ph=B-T,link=tLink.checked,X=b=>L+u(b,e)*span;
+  panelBg(ctx,L,T,span,ph);ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.04)';for(let j=1;j<4;j++)hline(ctx,L,R,T+ph*j/4);
+  if(link){const xa=X(S.w0),xz=X(S.w0+S.dw);ctx.fillStyle='rgba(245,201,106,.07)';ctx.fillRect(xa,T,xz-xa,ph);ctx.strokeStyle='rgba(245,201,106,.5)';ctx.setLineDash([4,4]);vline(ctx,xa,T,B);vline(ctx,xz,T,B);ctx.setLineDash([])}
+  ctx.font='9px '+MONO;ctx.textAlign='center';
+  for(const b of GRID){const x=X(b);ctx.strokeStyle=b===.5?'rgba(117,224,210,.4)':'rgba(169,185,208,.11)';ctx.setLineDash(b===.2||b===.8?[3,5]:[]);vline(ctx,x,T,B);if(GLAB.includes(b)){ctx.fillStyle='#8292aa';ctx.fillText(b<.1||b>.9?b.toFixed(2):b.toFixed(1),x,T-8)}}
+  ctx.setLineDash([]);
+  // Exact screen density per unit of axis fraction: f(beta) / (du/dbeta), stacked by component
+  const gb=D.gb,xs=new Float32Array(G),cum=[new Float32Array(G),new Float32Array(G),new Float32Array(G)];let maxD=0;
+  for(let g=0;g<G;g++){const d=dudb(gb[g],e);xs[g]=X(gb[g]);let s=0;for(let k=0;k<3;k++){s+=D.gf[k][g]/d;cum[k][g]=s}if(s>maxD)maxD=s}
+  // Empirical histogram in the same units: count / (N * bin width)
+  const nb=clamp(Math.round(span/14),24,90),hist=new Float32Array(nb);for(let i=0;i<D.n;i++)hist[Math.min(nb-1,Math.floor(u(D.mu[i],e)*nb))]++;
+  let maxH=0;for(let j=0;j<nb;j++){hist[j]*=nb/D.n;if(hist[j]>maxH)maxH=hist[j]}
+  const sc=ph*.86/Math.max(maxD,tHist.checked?maxH:0,1e-9),Y=v=>B-v*sc;
+  if(tDens.checked){
+   for(let k=0;k<3;k++){ctx.beginPath();ctx.moveTo(xs[0],Y(cum[k][0]));for(let g=1;g<G;g++)ctx.lineTo(xs[g],Y(cum[k][g]));for(let g=G-1;g>=0;g--)ctx.lineTo(xs[g],k?Y(cum[k-1][g]):B);ctx.closePath();ctx.fillStyle='rgba('+COMP[k].rgb+',.16)';ctx.fill()}
+   ctx.beginPath();for(let g=0;g<G;g++)ctx.lineTo(xs[g],Y(cum[2][g]));ctx.strokeStyle='rgba(117,224,210,.9)';ctx.lineWidth=1.7;ctx.stroke();ctx.lineWidth=1;
+  }
+  if(tHist.checked){ctx.beginPath();ctx.moveTo(L,B);for(let j=0;j<nb;j++){const y=Y(hist[j]);ctx.lineTo(L+j/nb*span,y);ctx.lineTo(L+(j+1)/nb*span,y)}ctx.lineTo(R,B);ctx.strokeStyle='rgba(237,243,255,.4)';ctx.stroke()}
+  const pos=D.posA;
+  if(tDots.checked){
+   for(let i=0;i<D.n;i++){const b=D.mu[i],d=dudb(b,e),lo=D.lowF[i]/d*sc,hi=(D.lowF[i]+D.ownF[i])/d*sc;pos[2*i]=X(b);pos[2*i+1]=B-1.5-(lo+(.08+.84*D.jit[i])*(hi-lo))}
+   drawDots(ctx,pos,D.n>2500?1.3:D.n>1200?1.7:2.1,link);
+  }else pos.fill(NaN);
+  rings(ctx,pos);
+  ctx.strokeStyle='#53627a';hline(ctx,L,R,B+.5);
+  const[aB,aM]=xTicks(ctx,(b,m)=>X(b),B+18,e);
+  ctx.font='700 10px '+SANS;ctx.textAlign='center';ctx.fillStyle='rgba(167,181,201,'+aB+')';ctx.fillText('BETA VALUE  (TRUE LEVEL)',L+span/2,B+42);ctx.fillStyle='rgba(117,224,210,'+aM+')';ctx.fillText('M VALUE  ·  LOG₂ ODDS',L+span/2,B+42);
+  ctx.font='10px '+SANS;ctx.textAlign='left';ctx.fillStyle='#8191a8';ctx.fillText('DENSITY ON SCREEN',L,T-28);if(span>=480){ctx.textAlign='right';ctx.fillStyle='#71829a';ctx.fillText('area = exact mixture density ÷ local stretch',R,T-28)}
+ }
+
+ // ---------- view B: transform curve with marginals and window ----------
+ function drawB(){
+  const c=CV.B,ctx=c.ctx,W=c.W,H=c.H;if(!W||!D)return;ctx.setTransform(c.dpr,0,0,c.dpr,0,0);ctx.clearRect(0,0,W,H);
+  const mh=40,gap=6,top=14,pL=50,pR=W-16-mh-gap,pT=top+mh+gap,pB=H-46,pw=pR-pL,ph=pB-pT;c.geo={pL,pw};
+  const xb=b=>pL+b*pw,ym=m=>pB-(clamp(m,-MAXM,MAXM)+MAXM)/(2*MAXM)*ph;
+  panelBg(ctx,pL,pT,pw,ph);ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.045)';for(let k=1;k<5;k++)vline(ctx,xb(k/5),pT,pB);for(let m=-6;m<=6;m+=2)hline(ctx,pL,pR,ym(m));
+  ctx.strokeStyle='rgba(117,224,210,.2)';hline(ctx,pL,pR,ym(0));vline(ctx,xb(.5),pT,pB);
+  const a=S.w0,z=S.w0+S.dw,ma=logit(clamp(a,BLO,BHI)),mz=logit(clamp(z,BLO,BHI));
+  ctx.fillStyle='rgba(245,201,106,.08)';ctx.fillRect(xb(a),top,xb(z)-xb(a),pB-top);ctx.fillStyle='rgba(117,224,210,.08)';ctx.fillRect(pL,ym(mz),W-16-pL,ym(ma)-ym(mz));
+  ctx.setLineDash([3,4]);ctx.strokeStyle='rgba(245,201,106,.55)';vline(ctx,xb(a),top,pB);vline(ctx,xb(z),top,pB);ctx.strokeStyle='rgba(117,224,210,.55)';hline(ctx,pL,W-16,ym(ma));hline(ctx,pL,W-16,ym(mz));ctx.setLineDash([]);
+  // Marginal histograms, stacked by component
+  let maxB=1,maxM=1;for(let j=0;j<HB;j++){maxB=Math.max(maxB,D.hb[0][j]+D.hb[1][j]+D.hb[2][j]);maxM=Math.max(maxM,D.hm[0][j]+D.hm[1][j]+D.hm[2][j])}
+  for(let j=0;j<HB;j++){let accB=0,accM=0;for(let k=0;k<3;k++){ctx.fillStyle='rgba('+COMP[k].rgb+',.62)';const hB=D.hb[k][j]/maxB*mh,hM=D.hm[k][j]/maxM*mh;if(hB>0){ctx.fillRect(xb(j/HB)+.5,top+mh-accB-hB,pw/HB-1,hB);accB+=hB}if(hM>0){ctx.fillRect(pR+gap+accM,ym(-MAXM+2*MAXM*(j+1)/HB)+.5,hM,ph/HB-1);accM+=hM}}}
+  ctx.beginPath();for(let g=0;g<G;g++)ctx.lineTo(xb(D.gb[g]),ym(logit(D.gb[g])));ctx.strokeStyle='rgba(117,224,210,.75)';ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();for(let g=0;g<G;g++){const b=D.gb[g];if(b>=a&&b<=z)ctx.lineTo(xb(b),ym(logit(b)))}ctx.strokeStyle='#f5c96a';ctx.lineWidth=3.4;ctx.stroke();ctx.lineWidth=1;
+  const pos=D.posB;for(let i=0;i<D.n;i++){pos[2*i]=xb(D.mu[i]);pos[2*i+1]=ym(logit(D.mu[i]))}drawDots(ctx,pos,2,tLink.checked);
+  const i=hover>=0?hover:pinned;
+  if(i>=0){const b=D.mu[i],s=1/(LN2*b*(1-b)),x=pos[2*i],y=pos[2*i+1];let dx=1,dy=-s*(ph/(2*MAXM))/pw;const len=Math.hypot(dx,dy);dx=dx/len*90;dy=dy/len*90;
+   ctx.save();ctx.beginPath();ctx.rect(pL,pT,pw,ph);ctx.clip();ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x-dx,y-dy);ctx.lineTo(x+dx,y+dy);ctx.stroke();ctx.restore();
+   const right=x>pL+pw*.55;pill(ctx,'dM/dβ = '+s.toFixed(1),x+(right?-14:14),clamp(y+20,pT+12,pB-12),'#fff',right?'right':'left')}
+  rings(ctx,pos);
+  pill(ctx,'Δβ '+S.dw.toFixed(2),(xb(a)+xb(z))/2,pT+14,'#f5c96a','center');pill(ctx,'ΔM '+(mz-ma).toFixed(2),pR-6,clamp((ym(ma)+ym(mz))/2,pT+14,pB-12),'#75e0d2','right');
+  ctx.strokeStyle='#53627a';hline(ctx,pL,pR,pB+.5);vline(ctx,pL-.5,pT,pB);
+  ctx.font='10px '+MONO;ctx.fillStyle='#a7b5c9';ctx.textAlign='center';for(let k=0;k<=5;k++)ctx.fillText((k/5).toFixed(1),xb(k/5),pB+16);
+  ctx.textAlign='right';ctx.fillStyle='#75e0d2';for(let m=-8;m<=8;m+=4)ctx.fillText(m>0?'+'+m:String(m),pL-7,ym(m)+3.5);
+  ctx.font='700 10px '+SANS;ctx.textAlign='center';ctx.fillStyle='#a7b5c9';ctx.fillText('β  (TRUE LEVEL)',pL+pw/2,pB+36);
+  ctx.save();ctx.translate(13,(pT+pB)/2);ctx.rotate(-Math.PI/2);ctx.fillStyle='#75e0d2';ctx.fillText('M  =  LOG₂ ODDS',0,0);ctx.restore();
+ }
+
+ // ---------- view C: replicate SD vs mean, morphing between scales ----------
+ function drawC(){
+  const c=CV.C,ctx=c.ctx,W=c.W,H=c.H;if(!W||!D)return;ctx.setTransform(c.dpr,0,0,c.dpr,0,0);ctx.clearRect(0,0,W,H);
+  const e=ease(t),pL=58,pR=W-16,pT=36,pB=H-46,pw=pR-pL,ph=pB-pT,link=tLink.checked;
+  const xn=(b,m)=>lerp(b,(clamp(m,-MAXM,MAXM)+MAXM)/(2*MAXM),e),X=v=>pL+v*pw,Y=v=>pB-clamp(v,0,1.04)*ph;
+  panelBg(ctx,pL,pT,pw,ph);ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.045)';for(let k=1;k<4;k++)hline(ctx,pL,pR,pT+ph*k/4);
+  if(link){const xa=X(xn(S.w0,logit(clamp(S.w0,BLO,BHI)))),xz=X(xn(S.w0+S.dw,logit(clamp(S.w0+S.dw,BLO,BHI))));ctx.fillStyle='rgba(245,201,106,.06)';ctx.fillRect(xa,pT,xz-xa,ph);ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(245,201,106,.45)';vline(ctx,xa,pT,pB);vline(ctx,xz,pT,pB);ctx.setLineDash([])}
+  const pos=D.posC,NB=26,bx=new Float64Array(NB),by=new Float64Array(NB),bc=new Uint16Array(NB);
+  for(let i=0;i<D.n;i++){const x=xn(D.mb[i],D.mm[i]),y=lerp(D.sb[i]/D.Yb,D.sm[i]/D.Ym,e),j=clamp(Math.floor(x*NB),0,NB-1);bx[j]+=x;by[j]+=y;bc[j]++;pos[2*i]=X(x);pos[2*i+1]=Y(y)}
+  drawDots(ctx,pos,D.n>2500?1.3:1.8,link);
+  const sdM=C4*S.sigma*Math.SQRT2/LN2;ctx.beginPath();for(let g=0;g<G;g+=2){const b=D.gb[g];ctx.lineTo(X(xn(b,logit(b))),Y(lerp(LN2*b*(1-b)*sdM/D.Yb,sdM/D.Ym,e)))}
+  ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(245,201,106,.95)';ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();let started=false;for(let j=0;j<NB;j++){if(bc[j]<5)continue;const x=X(bx[j]/bc[j]),y=Y(by[j]/bc[j]);if(started)ctx.lineTo(x,y);else ctx.moveTo(x,y);started=true}
+  ctx.strokeStyle='rgba(8,13,25,.85)';ctx.lineWidth=5;ctx.stroke();ctx.strokeStyle='#75e0d2';ctx.lineWidth=2.3;ctx.stroke();ctx.lineWidth=1;
+  rings(ctx,pos);
+  ctx.strokeStyle='#53627a';hline(ctx,pL,pR,pB+.5);vline(ctx,pL-.5,pT,pB);
+  const[aB,aM]=xTicks(ctx,(b,m)=>X(xn(b,m)),pB+16,e);
+  ctx.font='10px '+MONO;ctx.textAlign='right';for(let k=0;k<=4;k++){const y=pB-ph*k/4+3.5;ctx.fillStyle='rgba(167,181,201,'+aB+')';ctx.fillText(tick(D.Yb*k/4,D.Yb),pL-7,y);ctx.fillStyle='rgba(117,224,210,'+aM+')';ctx.fillText(tick(D.Ym*k/4,D.Ym),pL-7,y)}
+  ctx.font='700 10px '+SANS;ctx.textAlign='center';ctx.fillStyle='rgba(167,181,201,'+aB+')';ctx.fillText('MEAN β OF REPLICATES',pL+pw/2,pB+36);ctx.fillStyle='rgba(117,224,210,'+aM+')';ctx.fillText('MEAN M OF REPLICATES',pL+pw/2,pB+36);
+  ctx.save();ctx.translate(13,(pT+pB)/2);ctx.rotate(-Math.PI/2);ctx.fillStyle='rgba(167,181,201,'+aB+')';ctx.fillText('SD  (β)',0,0);ctx.fillStyle='rgba(117,224,210,'+aM+')';ctx.fillText('SD  (M)',0,0);ctx.restore();
+  ctx.font='10px '+SANS;ctx.textAlign='left';ctx.fillStyle='#8191a8';if(pw>=420)ctx.fillText('REPLICATE SD vs MEAN',pL,pT-14);
+  ctx.textAlign='right';ctx.fillStyle='rgba(245,201,106,'+clamp(1-2*e,0,1)+')';ctx.fillText('β: noise shrinks toward 0 and 1',pR,pT-14);ctx.fillStyle='rgba(117,224,210,'+clamp(2*e-1,0,1)+')';ctx.fillText('M: noise is roughly constant',pR,pT-14);
+ }
+
+ // ---------- canvases, interaction, loop ----------
+ const CV={};for(const k of['A','B','C']){const cv=$('c'+k);CV[k]={cv,ctx:cv.getContext('2d'),W:0,H:0,dpr:1,key:k}}
+ const ro=new ResizeObserver(entries=>{for(const en of entries){const c=Object.values(CV).find(o=>o.cv===en.target),r=c.cv.getBoundingClientRect();c.dpr=Math.min(window.devicePixelRatio||1,2);c.W=r.width;c.H=r.height;c.cv.width=Math.round(c.W*c.dpr);c.cv.height=Math.round(c.H*c.dpr)}dirty=true});
+ Object.values(CV).forEach(c=>ro.observe(c.cv));
+ function nearest(pos,mx,my,r2=144){let best=-1,bd=r2;for(let i=0;i<D.n;i++){const dx=pos[2*i]-mx,dy=pos[2*i+1]-my,d=dx*dx+dy*dy;if(d<bd){bd=d;best=i}}return best}
+ function setHover(h){if(h!==hover){hover=h;dirty=true;updateInspector()}}
+ // Floating tooltip next to the cursor with the hovered CpG's exact values
+ const tip=$('tip'),hideTip=()=>{tip.hidden=true};
+ function showTip(key,cx,cy){
+  if(hover<0||!D){hideTip();return}
+  const i=hover,b=D.mu[i],k=D.comp[i];
+  tip.innerHTML='<div class="tip-h"><i class="sw" style="background:rgb('+COMP[k].rgb+')"></i>CpG #'+(i+1)+' &middot; '+COMP[k].name+'</div>&#946; <b>'+b.toFixed(3)+'</b> &nbsp;&#8594;&nbsp; M <b>'+fm(logit(b))+'</b>'+
+   (key==='C'?'<div class="tip-s">replicates: &#946; '+D.mb[i].toFixed(3)+' &plusmn; '+D.sb[i].toFixed(3)+' &middot; M '+fm(D.mm[i])+' &plusmn; '+D.sm[i].toFixed(2)+'</div>':'');
+  tip.hidden=false;
+  const rr=root.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight;let x=cx-rr.left+14,y=cy-rr.top+16;
+  if(x+w>rr.width-8)x=cx-rr.left-14-w;if(cy+16+h>window.innerHeight-8)y=cy-rr.top-16-h;
+  tip.style.left=Math.max(4,x)+'px';tip.style.top=y+'px';
+ }
+ function setPin(){pinned=hover;dirty=true;updateInspector()}
+ for(const c of Object.values(CV)){
+  c.cv.addEventListener('pointermove',ev=>{if(!D)return;const r=c.cv.getBoundingClientRect(),mx=ev.clientX-r.left,my=ev.clientY-r.top;
+   if(c.key==='B'&&drag){if(!c.geo)return;const dx=ev.clientX-drag.x;if(Math.abs(dx)>3)drag.moved=true;if(drag.moved){hideTip();S.w0=clamp(drag.w0+dx/c.geo.pw,0,1-S.dw);updateWindow();lastSel=-2;updateInspector();dirty=true}return}
+   if(ev.pointerType!=='mouse')return;
+   setHover(nearest(D['pos'+c.key],mx,my));showTip(c.key,ev.clientX,ev.clientY)});
+  // Touch has no hover: a tap selects the nearest dot (larger radius), pins it and shows the tooltip; tapping empty space clears it
+  c.cv.addEventListener('pointerleave',ev=>{if(ev.pointerType!=='mouse')return;hideTip();if(!drag)setHover(-1)});
+  c.cv.addEventListener('pointerdown',ev=>{if(!D)return;
+   if(ev.pointerType!=='mouse'){const r=c.cv.getBoundingClientRect();setHover(nearest(D['pos'+c.key],ev.clientX-r.left,ev.clientY-r.top,484))}
+   if(c.key==='B'){drag={x:ev.clientX,w0:S.w0,moved:false};try{c.cv.setPointerCapture(ev.pointerId)}catch(e){}}});
+  c.cv.addEventListener('pointerup',ev=>{if(!D)return;
+   if(c.key==='B'){const tap=drag&&!drag.moved;drag=null;if(!tap)return}
+   setPin();if(ev.pointerType!=='mouse'){if(pinned>=0)showTip(c.key,ev.clientX,ev.clientY);else hideTip()}});
+  c.cv.addEventListener('pointercancel',ev=>{drag=null;if(ev.pointerType!=='mouse'&&pinned<0){hideTip();setHover(-1)}});
+ }
+ const setPlay=s=>{play.innerHTML=s==='pause'?'&#9646;&#9646; &nbsp; Pause':s==='replay'?'&#9654; &nbsp; Replay':'&#9654; &nbsp; Play'};
+ play.addEventListener('click',()=>{if(t>=1)t=0;playing=!playing;setPlay(playing?'pause':'play');dirty=true});
+ scrub.addEventListener('input',()=>{t=Number(scrub.value)/1000;playing=false;setPlay(t>=1?'replay':'play');dirty=true});
+ $('resample').addEventListener('click',sample);
+ for(const el of[nEl,pmEl,piEl,sgEl])el.addEventListener('input',sample);
+ dwEl.addEventListener('input',()=>{readSettings();updateWindow();lastSel=-2;updateInspector();dirty=true});
+ spEl.addEventListener('input',readSettings);
+ for(const el of[tDens,tHist,tDots,tLink])el.addEventListener('change',()=>{dirty=true});
+ function frame(now){
+  if(!root.isConnected){ro.disconnect();return}
+  if(!last)last=now;const dt=Math.min(50,now-last);last=now;
+  if(playing){t+=dt*S.speed/11000;if(t>=1){t=1;playing=false;setPlay('replay')}scrub.value=Math.round(t*1000);dirty=true}
+  if(dirty){dirty=false;drawA();drawB();drawC();updateText()}
+  requestAnimationFrame(frame);
+ }
+ sample();requestAnimationFrame(frame);
+ })();
+ </script>
+</div>
+</body>
+</html>
