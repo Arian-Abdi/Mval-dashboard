@@ -234,11 +234,13 @@ body{padding:14px 16px 24px}
  function vline(ctx,x,y0,y1){ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x,y1);ctx.stroke()}
  function hline(ctx,x0,x1,y){ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke()}
  function pill(ctx,txt,x,y,col,align){ctx.font='700 10px '+MONO;const w=ctx.measureText(txt).width+12,x0=align==='right'?x-w:align==='left'?x:x-w/2;ctx.fillStyle='rgba(8,13,25,.88)';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x0,y-9,w,18,5);else ctx.rect(x0,y-9,w,18);ctx.fill();ctx.fillStyle=col;ctx.textAlign='left';ctx.fillText(txt,x0+6,y+3.5)}
+ // Dot radius shrinks with narrower plots and with more probes; never below 0.75 px
+ function dotR(c,base){return Math.max(.75,base*clamp(c.W/900,.55,1)*(D.n>2500?.65:D.n>1200?.8:1))}
  function drawDots(ctx,pos,r,link){
   for(let pass=0;pass<2;pass++)for(let k=0;k<3;k++){
    ctx.beginPath();let any=false;
    for(let i=0;i<D.n;i++){if(D.comp[i]!==k)continue;const w=inWin(D.mu[i]);if(link){if(pass===0&&w)continue;if(pass===1&&!w)continue}else if(pass===1)continue;
-    const x=pos[2*i],y=pos[2*i+1],rr=pass?r+.35:r;ctx.moveTo(x+rr,y);ctx.arc(x,y,rr,0,6.2832);any=true}
+    const x=pos[2*i],y=pos[2*i+1],rr=pass?r*1.3:r;ctx.moveTo(x+rr,y);ctx.arc(x,y,rr,0,6.2832);any=true}
    if(any){ctx.fillStyle='rgba('+COMP[k].rgb+','+(link&&!pass?.24:.85)+')';ctx.fill()}
   }
  }
@@ -278,7 +280,7 @@ body{padding:14px 16px 24px}
   const pos=D.posA;
   if(tDots.checked){
    for(let i=0;i<D.n;i++){const b=D.mu[i],d=dudb(b,e),lo=D.lowF[i]/d*sc,hi=(D.lowF[i]+D.ownF[i])/d*sc;pos[2*i]=X(b);pos[2*i+1]=B-1.5-(lo+(.08+.84*D.jit[i])*(hi-lo))}
-   drawDots(ctx,pos,D.n>2500?1.3:D.n>1200?1.7:2.1,link);
+   drawDots(ctx,pos,dotR(c,1.6),link);
   }else pos.fill(NaN);
   rings(ctx,pos);
   ctx.strokeStyle='#53627a';hline(ctx,L,R,B+.5);
@@ -302,7 +304,7 @@ body{padding:14px 16px 24px}
   for(let j=0;j<HB;j++){let accB=0,accM=0;for(let k=0;k<3;k++){ctx.fillStyle='rgba('+COMP[k].rgb+',.62)';const hB=D.hb[k][j]/maxB*mh,hM=D.hm[k][j]/maxM*mh;if(hB>0){ctx.fillRect(xb(j/HB)+.5,top+mh-accB-hB,pw/HB-1,hB);accB+=hB}if(hM>0){ctx.fillRect(pR+gap+accM,ym(-MAXM+2*MAXM*(j+1)/HB)+.5,hM,ph/HB-1);accM+=hM}}}
   ctx.beginPath();for(let g=0;g<G;g++)ctx.lineTo(xb(D.gb[g]),ym(logit(D.gb[g])));ctx.strokeStyle='rgba(117,224,210,.75)';ctx.lineWidth=2;ctx.stroke();
   ctx.beginPath();for(let g=0;g<G;g++){const b=D.gb[g];if(b>=a&&b<=z)ctx.lineTo(xb(b),ym(logit(b)))}ctx.strokeStyle='#f5c96a';ctx.lineWidth=3.4;ctx.stroke();ctx.lineWidth=1;
-  const pos=D.posB;for(let i=0;i<D.n;i++){pos[2*i]=xb(D.mu[i]);pos[2*i+1]=ym(logit(D.mu[i]))}drawDots(ctx,pos,2,tLink.checked);
+  const pos=D.posB;for(let i=0;i<D.n;i++){pos[2*i]=xb(D.mu[i]);pos[2*i+1]=ym(logit(D.mu[i]))}drawDots(ctx,pos,dotR(c,1.4),tLink.checked);
   const i=hover>=0?hover:pinned;
   if(i>=0){const b=D.mu[i],s=1/(LN2*b*(1-b)),x=pos[2*i],y=pos[2*i+1];let dx=1,dy=-s*(ph/(2*MAXM))/pw;const len=Math.hypot(dx,dy);dx=dx/len*90;dy=dy/len*90;
    ctx.save();ctx.beginPath();ctx.rect(pL,pT,pw,ph);ctx.clip();ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x-dx,y-dy);ctx.lineTo(x+dx,y+dy);ctx.stroke();ctx.restore();
@@ -325,7 +327,7 @@ body{padding:14px 16px 24px}
   if(link){const xa=X(xn(S.w0,logit(clamp(S.w0,BLO,BHI)))),xz=X(xn(S.w0+S.dw,logit(clamp(S.w0+S.dw,BLO,BHI))));ctx.fillStyle='rgba(245,201,106,.06)';ctx.fillRect(xa,pT,xz-xa,ph);ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(245,201,106,.45)';vline(ctx,xa,pT,pB);vline(ctx,xz,pT,pB);ctx.setLineDash([])}
   const pos=D.posC,NB=26,bx=new Float64Array(NB),by=new Float64Array(NB),bc=new Uint16Array(NB);
   for(let i=0;i<D.n;i++){const x=xn(D.mb[i],D.mm[i]),y=lerp(D.sb[i]/D.Yb,D.sm[i]/D.Ym,e),j=clamp(Math.floor(x*NB),0,NB-1);bx[j]+=x;by[j]+=y;bc[j]++;pos[2*i]=X(x);pos[2*i+1]=Y(y)}
-  drawDots(ctx,pos,D.n>2500?1.3:1.8,link);
+  drawDots(ctx,pos,dotR(c,1.4),link);
   const sdM=C4*S.sigma*Math.SQRT2/LN2;ctx.beginPath();for(let g=0;g<G;g+=2){const b=D.gb[g];ctx.lineTo(X(xn(b,logit(b))),Y(lerp(LN2*b*(1-b)*sdM/D.Yb,sdM/D.Ym,e)))}
   ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(245,201,106,.95)';ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);
   ctx.beginPath();let started=false;for(let j=0;j<NB;j++){if(bc[j]<5)continue;const x=X(bx[j]/bc[j]),y=Y(by[j]/bc[j]);if(started)ctx.lineTo(x,y);else ctx.moveTo(x,y);started=true}
