@@ -16,6 +16,7 @@ body{padding:14px 16px 24px}
 .site-nav a:hover{color:#fff;border-color:#33445f}
 .site-nav a[aria-current]{color:#0c1422;background:#75e0d2;border-color:#75e0d2}
 .site-nav a:focus-visible{outline:3px solid #75e0d288;outline-offset:2px}
+@media(max-width:760px){body{padding:8px 8px 16px}.site-nav{margin-right:44px}}
 </style>
 </head>
 <body>
@@ -34,7 +35,11 @@ body{padding:14px 16px 24px}
  #bm3-page .chip b{color:#fff;font-weight:700}
  #bm3-page .chip.f{font:11.5px ui-monospace,SFMono-Regular,Consolas,monospace;color:#fff}
  #bm3-page .chip.f em{font-style:normal;color:var(--cyan)}
- #bm3-page .layout{display:grid;grid-template-columns:292px minmax(0,1fr);gap:12px;align-items:start}
+ #bm3-page .layout{display:grid;grid-template-columns:292px minmax(0,1fr);grid-template-rows:auto 1fr;gap:12px;align-items:start}
+ #bm3-page .transport-box{grid-column:1;grid-row:1}
+ #bm3-page .side{grid-column:1;grid-row:2}
+ #bm3-page .main{grid-column:2;grid-row:1/span 2}
+ #bm3-page .drawer-tab,#bm3-page .scrim,#bm3-page .drawer-head{display:none}
  #bm3-page .side{display:flex;flex-direction:column;gap:10px;min-width:0}
  #bm3-page .box{border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#111a29,#0f1725);padding:12px 14px;min-width:0}
  #bm3-page .box-label{color:#8192ab;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:750;margin-bottom:8px}
@@ -92,8 +97,33 @@ body{padding:14px 16px 24px}
  #bm3-page .tip b{color:#fff;font-weight:700}
  #bm3-page .tip .tip-h{display:flex;align-items:center;gap:6px;color:#8fa0b8;font:600 10.5px ui-sans-serif,system-ui,sans-serif;margin-bottom:3px}
  #bm3-page .tip .tip-s{color:#8fa0b8;font-size:10.5px;margin-top:2px}
- @media(max-width:900px){#bm3-page .layout{display:flex;flex-direction:column;align-items:stretch}#bm3-page .side{display:contents}#bm3-page .side>.box{order:2}#bm3-page .side>.transport-box{order:0}#bm3-page .main{order:1}}
- @media(max-width:760px){#bm3-page{padding:14px;border-radius:16px}#bm3-page .duo{grid-template-columns:1fr}#bm3-page .card-head{flex-wrap:wrap}}
+ @media(max-width:900px){#bm3-page .layout{display:flex;flex-direction:column;align-items:stretch}#bm3-page .side{display:contents}#bm3-page .side>.box{order:2}#bm3-page .transport-box{order:0}#bm3-page .main{order:1}}
+ @media(max-width:760px){
+  #bm3-page{margin-right:44px;padding:12px 10px 14px;border-radius:16px}
+  #bm3-page .layout{display:block}
+  #bm3-page .main{gap:10px}
+  #bm3-page .duo{grid-template-columns:1fr;gap:10px}
+  #bm3-page .card-head{flex-wrap:wrap}
+  /* Settings drawer, slides in from the left */
+  #bm3-page .side{position:fixed;top:0;bottom:0;left:0;z-index:40;width:min(86vw,320px);display:flex;flex-direction:column;gap:10px;overflow-y:auto;overscroll-behavior:contain;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(14px + env(safe-area-inset-bottom,0px));background:#0b111d;border-right:1px solid var(--line);box-shadow:16px 0 48px #000a;transform:translateX(-105%);visibility:hidden;transition:transform .28s ease,visibility 0s linear .28s}
+  #bm3-page.drawer-open .side{transform:none;visibility:visible;transition:transform .28s ease}
+  #bm3-page .drawer-head{display:flex;align-items:center;justify-content:space-between;color:#fff;font-weight:700;font-size:14px;padding:2px 2px 2px 4px}
+  #bm3-page .icon-btn{width:34px;height:34px;border-radius:50%;border:1px solid #2a3952;background:#172236;color:#dce6f6;font-size:14px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+  #bm3-page .scrim{display:block;position:fixed;inset:0;z-index:35;background:rgba(3,6,12,.6);opacity:0;pointer-events:none;transition:opacity .28s}
+  #bm3-page.drawer-open .scrim{opacity:1;pointer-events:auto}
+  #bm3-page .drawer-tab{display:grid;place-items:center;position:fixed;left:0;top:50%;z-index:30;width:22px;height:56px;margin-top:-28px;border:1px solid #33445f;border-left:0;border-radius:0 12px 12px 0;background:rgba(23,34,54,.94);color:var(--cyan);cursor:pointer;padding:0;box-shadow:4px 0 16px #0006}
+  #bm3-page .drawer-tab:focus-visible,#bm3-page .icon-btn:focus-visible{outline:3px solid #75e0d288;outline-offset:2px}
+  /* Right-edge rail: play/pause and new sample as icons, time slider stretched vertically (beta at top, M at bottom) */
+  #bm3-page .transport-box{position:fixed;top:0;right:0;bottom:0;z-index:30;width:44px;border:0;border-left:1px solid var(--line);border-radius:0;background:rgba(11,17,29,.95);padding:calc(10px + env(safe-area-inset-top,0px)) 4px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px}
+  #bm3-page .transport-box .box-label,#bm3-page .transport-box .readout,#bm3-page .transport-box .lbl{display:none}
+  #bm3-page .transport-box .row{display:contents}
+  #bm3-page .transport-box [data-k=play]{order:0}
+  #bm3-page .transport-box .scrub{order:1}
+  #bm3-page .transport-box [data-k=resample]{order:2}
+  #bm3-page .transport-box .btn{flex:none;width:36px;height:36px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:13px}
+  #bm3-page .transport-box .scrub{flex:1;min-height:0;flex-direction:column;margin:0;gap:6px;font-size:11px}
+  #bm3-page .transport-box .scrub input{writing-mode:vertical-lr;direction:ltr;width:24px;flex:1;min-height:0;margin:0}
+ }
  </style>
 
  <div class="head">
@@ -102,13 +132,14 @@ body{padding:14px 16px 24px}
  </div>
 
  <div class="layout">
-  <aside class="side">
-   <div class="box transport-box">
-    <div class="box-label">Transform</div>
-    <div class="row"><button class="btn" data-k="play" type="button">&#9646;&#9646; &nbsp; Pause</button><button class="btn alt" data-k="resample" type="button">&#8635; &nbsp; New sample</button></div>
-    <label class="scrub"><span>&#946;</span><input data-k="scrub" type="range" min="0" max="1000" value="0" aria-label="Transformation progress"><span>M</span></label>
-    <div class="readout" data-k="readout">0% transformed</div>
-   </div>
+  <div class="box transport-box">
+   <div class="box-label">Transform</div>
+   <div class="row"><button class="btn" data-k="play" type="button" aria-label="Pause"><span class="ic">&#9646;&#9646;</span><span class="lbl"> &nbsp; Pause</span></button><button class="btn alt" data-k="resample" type="button" aria-label="New sample"><span class="ic">&#8635;</span><span class="lbl"> &nbsp; New sample</span></button></div>
+   <label class="scrub"><span>&#946;</span><input data-k="scrub" type="range" min="0" max="1000" value="0" aria-label="Transformation progress"><span>M</span></label>
+   <div class="readout" data-k="readout">0% transformed</div>
+  </div>
+  <aside class="side" data-k="drawer" aria-label="Settings">
+   <div class="drawer-head"><span>Settings</span><button class="icon-btn" data-k="drawerClose" type="button" aria-label="Close settings">&#10005;</button></div>
    <div class="box">
     <div class="box-label">Simulation</div>
     <label class="setting"><span class="setting-head"><span>Probe count</span><output data-k="nOut">1,500</output></span><input data-k="n" type="range" min="200" max="4000" step="100" value="1500"></label>
@@ -138,6 +169,18 @@ body{padding:14px 16px 24px}
    </div>
   </div>
  </div>
+ <button class="drawer-tab" data-k="drawerBtn" type="button" aria-label="Open settings" aria-expanded="false"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></button>
+ <div class="scrim" data-k="scrim"></div>
+ <script>
+ // Phone layout: the settings sidebar becomes a drawer that slides in from the left
+ (()=>{const root=document.getElementById('bm3-page');if(!root||root.dataset.drawer)return;root.dataset.drawer='1';
+  const q=k=>root.querySelector('[data-k="'+k+'"]'),btn=q('drawerBtn');
+  const set=open=>{root.classList.toggle('drawer-open',open);btn.setAttribute('aria-expanded',String(open))};
+  btn.addEventListener('click',()=>set(!root.classList.contains('drawer-open')));
+  q('scrim').addEventListener('click',()=>set(false));q('drawerClose').addEventListener('click',()=>set(false));
+  root.addEventListener('keydown',e=>{if(e.key==='Escape')set(false)});
+ })();
+ </script>
 
  <div class="tip" data-k="tip" hidden></div>
  <script>
@@ -248,7 +291,8 @@ body{padding:14px 16px 24px}
   if(pinned>=0)ring(pinned,true);if(hover>=0&&hover!==pinned)ring(hover,false);
  }
  function xTicks(ctx,X,y,e){
-  const aB=1-clamp((e-.62)/.3,0,1),aM=clamp((e-.68)/.3,0,1);ctx.font='10px '+MONO;ctx.textAlign='center';
+  // Hand over between the two label sets without overlap: beta labels fade out, then M labels fade in
+  const aB=1-clamp((e-.55)/.15,0,1),aM=clamp((e-.7)/.15,0,1);ctx.font='10px '+MONO;ctx.textAlign='center';
   ctx.fillStyle='rgba(167,181,201,'+aB+')';for(let k=0;k<=5;k++){const b=k/5;ctx.fillText(b.toFixed(1),X(b,logit(b)),y)}
   ctx.fillStyle='rgba(117,224,210,'+aM+')';for(let m=-8;m<=8;m+=2)ctx.fillText(m>0?'+'+m:String(m),X(expit(m),m),y);
   return[aB,aM];
@@ -374,7 +418,8 @@ body{padding:14px 16px 24px}
    setPin();if(ev.pointerType!=='mouse'){if(pinned>=0)showTip(c.key,ev.clientX,ev.clientY);else hideTip()}});
   c.cv.addEventListener('pointercancel',ev=>{drag=null;if(ev.pointerType!=='mouse'&&pinned<0){hideTip();setHover(-1)}});
  }
- const setPlay=s=>{play.innerHTML=s==='pause'?'&#9646;&#9646; &nbsp; Pause':s==='replay'?'&#9654; &nbsp; Replay':'&#9654; &nbsp; Play'};
+ // Icon and label are separate spans so compact layouts can hide the label; FE0E keeps the play triangle from rendering as an emoji
+ const setPlay=s=>{const[ic,lb]=s==='pause'?['&#9646;&#9646;','Pause']:s==='replay'?['&#9654;&#xFE0E;','Replay']:['&#9654;&#xFE0E;','Play'];play.innerHTML='<span class="ic">'+ic+'</span><span class="lbl"> &nbsp; '+lb+'</span>';play.setAttribute('aria-label',lb)};
  play.addEventListener('click',()=>{if(t>=1)t=0;playing=!playing;setPlay(playing?'pause':'play');dirty=true});
  scrub.addEventListener('input',()=>{t=Number(scrub.value)/1000;playing=false;setPlay(t>=1?'replay':'play');dirty=true});
  $('resample').addEventListener('click',sample);

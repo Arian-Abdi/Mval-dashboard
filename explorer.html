@@ -16,6 +16,7 @@ body{padding:14px 16px 24px}
 .site-nav a:hover{color:#fff;border-color:#33445f}
 .site-nav a[aria-current]{color:#0c1422;background:#75e0d2;border-color:#75e0d2}
 .site-nav a:focus-visible{outline:3px solid #75e0d288;outline-offset:2px}
+@media(max-width:760px){body{padding:8px 8px 16px}}
 </style>
 </head>
 <body>
@@ -246,7 +247,8 @@ body{padding:14px 16px 24px}
   if(pinned>=0)ring(pinned,true);if(hover>=0&&hover!==pinned)ring(hover,false);
  }
  function xTicks(ctx,X,y,e){
-  const aB=1-clamp((e-.62)/.3,0,1),aM=clamp((e-.68)/.3,0,1);ctx.font='10px '+MONO;ctx.textAlign='center';
+  // Hand over between the two label sets without overlap: beta labels fade out, then M labels fade in
+  const aB=1-clamp((e-.55)/.15,0,1),aM=clamp((e-.7)/.15,0,1);ctx.font='10px '+MONO;ctx.textAlign='center';
   ctx.fillStyle='rgba(167,181,201,'+aB+')';for(let k=0;k<=5;k++){const b=k/5;ctx.fillText(b.toFixed(1),X(b,logit(b)),y)}
   ctx.fillStyle='rgba(117,224,210,'+aM+')';for(let m=-8;m<=8;m+=2)ctx.fillText(m>0?'+'+m:String(m),X(expit(m),m),y);
   return[aB,aM];
@@ -372,7 +374,8 @@ body{padding:14px 16px 24px}
    setPin();if(ev.pointerType!=='mouse'){if(pinned>=0)showTip(c.key,ev.clientX,ev.clientY);else hideTip()}});
   c.cv.addEventListener('pointercancel',ev=>{drag=null;if(ev.pointerType!=='mouse'&&pinned<0){hideTip();setHover(-1)}});
  }
- const setPlay=s=>{play.innerHTML=s==='pause'?'&#9646;&#9646; &nbsp; Pause':s==='replay'?'&#9654; &nbsp; Replay':'&#9654; &nbsp; Play'};
+ // Icon and label are separate spans so compact layouts can hide the label; FE0E keeps the play triangle from rendering as an emoji
+ const setPlay=s=>{const[ic,lb]=s==='pause'?['&#9646;&#9646;','Pause']:s==='replay'?['&#9654;&#xFE0E;','Replay']:['&#9654;&#xFE0E;','Play'];play.innerHTML='<span class="ic">'+ic+'</span><span class="lbl"> &nbsp; '+lb+'</span>';play.setAttribute('aria-label',lb)};
  play.addEventListener('click',()=>{if(t>=1)t=0;playing=!playing;setPlay(playing?'pause':'play');dirty=true});
  scrub.addEventListener('input',()=>{t=Number(scrub.value)/1000;playing=false;setPlay(t>=1?'replay':'play');dirty=true});
  $('resample').addEventListener('click',sample);
