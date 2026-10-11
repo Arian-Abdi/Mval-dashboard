@@ -16,7 +16,7 @@ body{padding:14px 16px 24px}
 .site-nav a:hover{color:#fff;border-color:#33445f}
 .site-nav a[aria-current]{color:#0c1422;background:#75e0d2;border-color:#75e0d2}
 .site-nav a:focus-visible{outline:3px solid #75e0d288;outline-offset:2px}
-@media(max-width:760px){body{padding:8px 8px 16px}.site-nav{margin-right:44px}}
+@media(max-width:760px){body{padding:8px 8px 16px}}
 </style>
 </head>
 <body>
@@ -99,8 +99,11 @@ body{padding:14px 16px 24px}
  #bm3-page .tip .tip-s{color:#8fa0b8;font-size:10.5px;margin-top:2px}
  @media(max-width:900px){#bm3-page .layout{display:flex;flex-direction:column;align-items:stretch}#bm3-page .side{display:contents}#bm3-page .side>.box{order:2}#bm3-page .transport-box{order:0}#bm3-page .main{order:1}}
  @media(max-width:760px){
-  #bm3-page{margin-right:44px;padding:12px 10px 14px;border-radius:16px}
+  #bm3-page{padding:12px 10px 14px;border-radius:16px}
   #bm3-page .layout{display:block}
+  #bm3-page .cA{height:230px}
+  #bm3-page .cB{height:310px}
+  #bm3-page .cC{height:290px}
   #bm3-page .main{gap:10px}
   #bm3-page .duo{grid-template-columns:1fr;gap:10px}
   #bm3-page .card-head{flex-wrap:wrap}
@@ -113,14 +116,18 @@ body{padding:14px 16px 24px}
   #bm3-page.drawer-open .scrim{opacity:1;pointer-events:auto}
   #bm3-page .drawer-tab{display:grid;place-items:center;position:fixed;left:0;top:50%;z-index:30;width:22px;height:56px;margin-top:-28px;border:1px solid #33445f;border-left:0;border-radius:0 12px 12px 0;background:rgba(23,34,54,.94);color:var(--cyan);cursor:pointer;padding:0;box-shadow:4px 0 16px #0006}
   #bm3-page .drawer-tab:focus-visible,#bm3-page .icon-btn:focus-visible{outline:3px solid #75e0d288;outline-offset:2px}
-  /* Right-edge rail: play/pause and new sample as icons, time slider stretched vertically (beta at top, M at bottom) */
-  #bm3-page .transport-box{position:fixed;top:0;right:0;bottom:0;z-index:30;width:44px;border:0;border-left:1px solid var(--line);border-radius:0;background:rgba(11,17,29,.95);padding:calc(10px + env(safe-area-inset-top,0px)) 4px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px}
+  /* Floating see-through pill, mid-height on the right edge: play/pause and new sample as icons, vertical time slider (beta at top, M at bottom) */
+  #bm3-page .transport-box{position:fixed;top:50%;right:4px;z-index:30;width:40px;height:min(46vh,380px);transform:translateY(-50%);border:1px solid rgba(117,224,210,.16);border-radius:22px;background:rgba(11,17,29,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);padding:5px 2px;display:flex;flex-direction:column;align-items:center;gap:6px}
+  #bm3-page .transport-box .btn{opacity:.85}
+  #bm3-page .transport-box .btn.alt{background:rgba(23,34,54,.55);border-color:rgba(42,57,82,.6)}
+  #bm3-page .transport-box .scrub{color:rgba(220,230,246,.75)}
+  #bm3-page .transport-box .scrub input{opacity:.8}
   #bm3-page .transport-box .box-label,#bm3-page .transport-box .readout,#bm3-page .transport-box .lbl{display:none}
   #bm3-page .transport-box .row{display:contents}
   #bm3-page .transport-box [data-k=play]{order:0}
   #bm3-page .transport-box .scrub{order:1}
   #bm3-page .transport-box [data-k=resample]{order:2}
-  #bm3-page .transport-box .btn{flex:none;width:36px;height:36px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:13px}
+  #bm3-page .transport-box .btn{flex:none;width:34px;height:34px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:12px}
   #bm3-page .transport-box .scrub{flex:1;min-height:0;flex-direction:column;margin:0;gap:6px;font-size:11px}
   #bm3-page .transport-box .scrub input{writing-mode:vertical-lr;direction:ltr;width:24px;flex:1;min-height:0;margin:0}
  }
